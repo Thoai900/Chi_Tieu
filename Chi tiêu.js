@@ -1,0 +1,370 @@
+import React, { useState } from 'react';
+import { 
+  Wallet, Home, ShoppingCart, PiggyBank, TrendingUp,
+  Plus, Trash2, Edit2, Save, X, ChevronDown, ChevronRight,
+  Zap, BookOpen, Coffee, Smartphone, ShieldCheck,
+  DollarSign, Briefcase, Gift, Palette, Type, Target, 
+  Landmark, ArrowUpRight, Receipt, 
+  AlignLeft, AlignCenter, AlignRight,
+  Lightbulb, BrainCircuit, HeartPulse, GraduationCap,
+  Coins, Umbrella, Sprout, TreeDeciduous, Utensils,
+  CloudSun, AlertTriangle, UserX, UserCheck, Scale, Calculator,
+  ArrowDownCircle, CheckCircle2
+} from 'lucide-react';
+
+const generateId = () => Math.random().toString(36).substr(2, 9);
+
+const createInitialData = (title, rootIcon, rootBg, rootText) => ({
+  id: generateId(),
+  label: title,
+  iconType: rootIcon,
+  image: null,
+  textColor: rootText,
+  bgColor: rootBg,
+  textAlign: 'left',
+  width: 420,
+  fontSize: 16,
+  children: []
+});
+
+const IconMapper = ({ type, color, size = 18 }) => {
+  return (
+    <span style={{ color: color }}>
+      {(() => {
+        switch (type) {
+          case 'wallet': return <Wallet size={size} />;
+          case 'income': return <DollarSign size={size} />;
+          case 'home': return <Home size={size} />;
+          case 'cart': return <ShoppingCart size={size} />;
+          case 'piggy': return <PiggyBank size={size} />;
+          case 'zap': return <Zap size={size} />;
+          case 'book': return <BookOpen size={size} />;
+          case 'shield': return <ShieldCheck size={size} />;
+          case 'trend': return <TrendingUp size={size} />;
+          case 'gift': return <Gift size={size} />;
+          case 'target': return <Target size={size} />;
+          case 'invest': return <ArrowUpRight size={size} />;
+          case 'receipt': return <Receipt size={size} />;
+          case 'idea': return <Lightbulb size={size} />;
+          case 'brain': return <BrainCircuit size={size} />;
+          case 'health': return <HeartPulse size={size} />;
+          case 'edu': return <GraduationCap size={size} />;
+          case 'coins': return <Coins size={size} />;
+          case 'umbrella': return <Umbrella size={size} />;
+          case 'sprout': return <Sprout size={size} />;
+          case 'tree': return <TreeDeciduous size={size} />;
+          case 'weather': return <CloudSun size={size} />;
+          case 'alert': return <AlertTriangle size={size} />;
+          case 'user-x': return <UserX size={size} />;
+          case 'user-check': return <UserCheck size={size} />;
+          case 'scale': return <Scale size={size} />;
+          case 'calc': return <Calculator size={size} />;
+          default: return <div className="w-4 h-4 rounded-full bg-current opacity-50" />;
+        }
+      })()}
+    </span>
+  );
+};
+
+const NodeItem = ({ node, level, onUpdate, onDelete, onAdd }) => {
+  // Trạng thái mở rộng mặc định là false (đóng) để người dùng tự mở
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [showDesignTools, setShowDesignTools] = useState(false);
+  const [tempLabel, setTempLabel] = useState(node.label);
+
+  const hasChildren = node.children && node.children.length > 0;
+
+  const nodeStyle = {
+    backgroundColor: node.bgColor || '#ffffff',
+    color: node.textColor || '#1e293b',
+    borderColor: level === 0 ? 'transparent' : `${node.textColor}33`,
+    width: `${node.width || 380}px`,
+    textAlign: node.textAlign || 'left',
+    fontSize: `${node.fontSize || 14}px`,
+  };
+
+  return (
+    <div className="flex flex-col w-full">
+      <div className="flex flex-col group py-2 relative">
+        {level > 0 && <div className="absolute -left-6 top-8 w-6 h-px bg-slate-300"></div>}
+        <div style={nodeStyle} className="flex flex-col rounded-2xl border transition-all duration-300 overflow-hidden shadow-sm hover:shadow-xl relative">
+          <div className="flex flex-col p-4 gap-3">
+            {isEditing ? (
+              <div className="flex items-center w-full gap-2">
+                <textarea className="flex-1 bg-white text-slate-900 px-3 py-1 rounded-lg text-sm outline-none border-2 border-emerald-400 min-h-[60px]" value={tempLabel} onChange={(e) => setTempLabel(e.target.value)} autoFocus />
+                <button onClick={() => { onUpdate(node.id, { label: tempLabel }); setIsEditing(false); }} className="text-emerald-600 self-end"><Save size={18}/></button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 flex items-center gap-3 cursor-pointer select-none" style={{ justifyContent: node.textAlign === 'center' ? 'center' : node.textAlign === 'right' ? 'flex-end' : 'flex-start' }} onClick={() => hasChildren && setIsExpanded(!isExpanded)}>
+                  <IconMapper type={node.iconType} color={node.textColor} size={(node.fontSize || 14) + 4} />
+                  <span className="font-bold tracking-tight leading-snug whitespace-pre-wrap">{node.label}</span>
+                  {hasChildren && <span className="opacity-40">{isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}</span>}
+                </div>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 bg-white/60 backdrop-blur-md rounded-lg p-1 border border-white/40 z-10">
+                  <button onClick={() => setShowDesignTools(!showDesignTools)} className="p-1.5 hover:bg-black/10 rounded-md"><Palette size={14} /></button>
+                  <button onClick={() => setIsEditing(true)} className="p-1.5 hover:bg-black/10 rounded-md"><Edit2 size={14} /></button>
+                  <button onClick={() => { onAdd(node.id); setIsExpanded(true); }} className="p-1.5 hover:bg-black/10 rounded-md"><Plus size={14} /></button>
+                  {level > 0 && <button onClick={() => onDelete(node.id)} className="p-1.5 hover:bg-rose-50 text-rose-400 rounded-md"><Trash2 size={14} /></button>}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {hasChildren && isExpanded && (
+        <div className="ml-8 border-l-2 border-slate-200 pl-8 space-y-1">
+          {node.children.map(child => <NodeItem key={child.id} node={child} level={level + 1} onUpdate={onUpdate} onAdd={onAdd} onDelete={onDelete} />)}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const FinanceBoard = ({ title, icon, bg, text, defaultItems }) => {
+  const [data, setData] = useState(() => {
+    const root = createInitialData(title, icon, bg, text);
+    root.children = defaultItems || [];
+    return root;
+  });
+
+  const updateNode = (nodes, nodeId, updates) => {
+    if (nodes.id === nodeId) return { ...nodes, ...updates };
+    if (nodes.children) return { ...nodes, children: nodes.children.map(child => updateNode(child, nodeId, updates)) };
+    return nodes;
+  };
+
+  const addNode = (nodes, parentId) => {
+    if (nodes.id === parentId) {
+      const newNode = { id: generateId(), label: 'Nội dung mới...', iconType: 'idea', textColor: nodes.textColor, bgColor: '#ffffff', textAlign: 'left', width: 400, fontSize: 14, children: [] };
+      return { ...nodes, children: [...(nodes.children || []), newNode] };
+    }
+    if (nodes.children) return { ...nodes, children: nodes.children.map(child => addNode(child, parentId)) };
+    return nodes;
+  };
+
+  const deleteNode = (nodes, nodeId) => {
+    if (nodes.children) {
+      if (nodes.children.some(c => c.id === nodeId)) return { ...nodes, children: nodes.children.filter(c => c.id !== nodeId) };
+      return { ...nodes, children: nodes.children.map(child => deleteNode(child, nodeId)) };
+    }
+    return nodes;
+  };
+
+  return (
+    <div className="bg-white/70 backdrop-blur-2xl p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-white flex-1 min-h-[400px] overflow-auto mb-10">
+      <NodeItem node={data} level={0} onUpdate={(id, updates) => setData(prev => updateNode(prev, id, updates))} onAdd={(id) => setData(prev => addNode(prev, id))} onDelete={(id) => setData(prev => deleteNode(prev, id))} />
+    </div>
+  );
+};
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 md:p-10 font-sans text-slate-900">
+      <div className="max-w-[1800px] mx-auto">
+        <header className="mb-14 flex flex-col items-center text-center">
+          <div className="bg-emerald-800 p-5 rounded-3xl text-white shadow-xl mb-6"><Sprout size={48} /></div>
+          <h1 className="text-4xl md:text-5xl font-black mb-2 tracking-tighter uppercase">Kế Hoạch Tài Chính Gia Đình Nhà Nông 2025</h1>
+          <p className="text-slate-500 font-medium max-w-2xl text-lg italic">Phân tích yếu tố chi phí, ảnh hưởng ngoại cảnh và tối ưu hóa bảng chi tiêu gia đình.</p>
+        </header>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-10 items-start">
+          
+          {/* PHÂN KHU 1: YẾU TỐ CHI PHÍ */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4 px-6">
+              <div className="w-10 h-10 bg-emerald-900 text-white rounded-xl flex items-center justify-center font-black shadow-lg">01</div>
+              <h2 className="text-xl font-black uppercase tracking-tight text-emerald-900">Sơ đồ Yếu tố Chi phí</h2>
+            </div>
+            <FinanceBoard title="Phân Loại Chi Phí" icon="cart" bg="#064e3b" text="#ffffff" 
+              defaultItems={[
+                { id: 'c1', label: 'Khoản Chi Thiết Yếu (Cố định)', iconType: 'home', textColor: '#1e293b', bgColor: '#f1f5f9', width: 400, fontSize: 16,
+                  children: [
+                    { id: 'c1-1', label: 'Lương thực, thực phẩm hàng ngày', iconType: 'cart', textColor: '#b91c1c' },
+                    { id: 'c1-2', label: 'Vật tư làm ruộng (Phân bón, giống, dầu máy)', iconType: 'sprout', textColor: '#b91c1c' },
+                    { id: 'c1-3', label: 'Điện, nước, internet & nạp card điện thoại', iconType: 'zap', textColor: '#b91c1c' }
+                  ]
+                },
+                { id: 'c2', label: 'Khoản Chi Linh Hoạt (Thay đổi)', iconType: 'gift', textColor: '#1e293b', bgColor: '#f1f5f9', width: 400, fontSize: 16,
+                  children: [
+                    { id: 'c2-1', label: 'Giao tế xã hội (Đám tiệc, quà biếu họ hàng)', iconType: 'heartpulse', textColor: '#0369a1' },
+                    { id: 'c2-2', label: 'Sửa chữa nhỏ nông cụ, công cụ vườn', iconType: 'tree', textColor: '#0369a1' }
+                  ]
+                }
+              ]}
+            />
+          </div>
+
+          {/* PHÂN KHU 2: PHÂN TÍCH THU NHẬP & ẢNH HƯỞNG */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4 px-6">
+              <div className="w-10 h-10 bg-indigo-700 text-white rounded-xl flex items-center justify-center font-black shadow-lg">02</div>
+              <h2 className="text-xl font-black uppercase tracking-tight text-indigo-900">Ảnh Hưởng Thực Tế</h2>
+            </div>
+            <FinanceBoard title="Thu Nhập & Tác Động" icon="income" bg="#312e81" text="#ffffff" 
+              defaultItems={[
+                { id: 'i1', label: 'Thu Nhập Thực Tế (Nông Nghiệp)', iconType: 'coins', textColor: '#1e293b', bgColor: '#eef2ff', width: 450, fontSize: 16,
+                  children: [
+                    { id: 'i1-1', label: 'Nguồn thu: Làm ruộng (Lúa, hoa màu)', iconType: 'sprout', textColor: '#4338ca' },
+                    { id: 'i1-2', label: 'Tổng thu: Bán mít, trái cây vườn, rau củ', iconType: 'tree', textColor: '#4338ca' }
+                  ]
+                },
+                { id: 'i2', label: 'Ảnh Hưởng Ngoại Cảnh', iconType: 'weather', textColor: '#1e293b', bgColor: '#eef2ff', width: 450, fontSize: 16,
+                  children: [
+                    { id: 'i2-1', label: 'Thời tiết: Nắng mưa làm hư hỏng nông sản', iconType: 'umbrella', textColor: '#b45309' },
+                    { id: 'i2-2', label: 'Thị trường: Giá mít bấp bênh, lái buôn ép giá', iconType: 'trend', textColor: '#b45309' }
+                  ]
+                },
+                { id: 'i3', label: 'Ảnh Hưởng Nội Bộ', iconType: 'brain', textColor: '#1e293b', bgColor: '#eef2ff', width: 450, fontSize: 16,
+                  children: [
+                    { id: 'i3-1', label: 'Hành vi lãng phí điện nước của thành viên', iconType: 'user-x', textColor: '#9f1239' },
+                    { id: 'i3-2', label: 'Mua sắm cảm tính khi vừa có tiền bán mùa', iconType: 'alert', textColor: '#9f1239' }
+                  ]
+                }
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* PHÂN KHU 3: BẢNG CHI TIÊU HỢP LÝ CẢI TIẾN */}
+        <div className="mt-6 flex flex-col gap-6">
+          <div className="flex items-center gap-4 px-6">
+            <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-lg">03</div>
+            <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">Bảng Chi Tiêu Hợp Lý & Dự Tính Tích Lũy</h2>
+          </div>
+
+          <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-2xl border border-slate-200">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+              
+              {/* THU NHẬP - TỐI ƯU HÓA */}
+              <div className="bg-emerald-50/50 p-6 rounded-[2rem] border border-emerald-100 flex flex-col gap-4">
+                <div className="flex items-center gap-3 text-emerald-800 font-black mb-2 uppercase text-sm">
+                  <TrendingUp size={20} /> Tổng Thu Dự Kiến (Tháng)
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-sm font-bold text-slate-600">
+                    <span>Lúa/Hoa màu (chia đều tháng)</span>
+                    <span className="text-emerald-700">7.500.000đ</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm font-bold text-slate-600">
+                    <span>Mít & Cây ăn trái</span>
+                    <span className="text-emerald-700">4.500.000đ</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm font-bold text-slate-600">
+                    <span>Nguồn thu phụ (Rau củ, gà/vịt)</span>
+                    <span className="text-emerald-700">2.000.000đ</span>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-emerald-200 flex justify-between items-center font-black text-emerald-900 text-lg">
+                    <span>TỔNG THU</span>
+                    <span>14.000.000đ</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* CHI TIÊU - TỐI ƯU HÓA */}
+              <div className="lg:col-span-2 bg-slate-50 p-6 rounded-[2rem] border border-slate-200">
+                 <div className="flex items-center gap-3 text-slate-800 font-black mb-4 uppercase text-sm">
+                  <Calculator size={20} /> Phân Bổ Chi Tiêu Hợp Lý (Cho 4 Người)
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                   <div className="space-y-4">
+                      <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <span className="text-sm font-bold text-slate-600 flex items-center gap-2"><Utensils size={14}/> Ăn uống tối ưu</span>
+                        <span className="font-black text-rose-600">3.500.000đ</span>
+                      </div>
+                      <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <span className="text-sm font-bold text-slate-600 flex items-center gap-2"><GraduationCap size={14}/> 2 con đi học</span>
+                        <span className="font-black text-rose-600">3.000.000đ</span>
+                      </div>
+                      <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <span className="text-sm font-bold text-slate-600 flex items-center gap-2"><Zap size={14}/> Điện nước + Viễn thông</span>
+                        <span className="font-black text-rose-600">1.200.000đ</span>
+                      </div>
+                   </div>
+                   <div className="space-y-4">
+                      <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <span className="text-sm font-bold text-slate-600 flex items-center gap-2"><Sprout size={14}/> Vật tư vụ mới</span>
+                        <span className="font-black text-rose-600">2.000.000đ</span>
+                      </div>
+                      <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <span className="text-sm font-bold text-slate-600 flex items-center gap-2"><HeartPulse size={14}/> Giao tế & Sức khỏe</span>
+                        <span className="font-black text-rose-600">1.000.000đ</span>
+                      </div>
+                      <div className="flex justify-between items-center bg-amber-600 p-4 rounded-xl text-white shadow-md">
+                        <span className="text-sm font-black flex items-center gap-2 uppercase tracking-tighter"><ShieldCheck size={16}/> Dự phòng rủi ro</span>
+                        <span className="font-black">800.000đ</span>
+                      </div>
+                   </div>
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-200 flex justify-between items-center font-black text-slate-900 text-xl">
+                  <span>TỔNG CHI</span>
+                  <span className="text-rose-600">11.500.000đ</span>
+                </div>
+              </div>
+            </div>
+
+            {/* KẾT QUẢ ĐẦU NGƯỜI & TÍCH LŨY */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+               <div className="bg-indigo-600 p-6 rounded-3xl text-white shadow-lg">
+                  <p className="text-[10px] font-black opacity-70 uppercase mb-1">Chi tiêu/Người</p>
+                  <p className="text-2xl font-black">2.875.000đ</p>
+                  <p className="text-[10px] mt-2 opacity-80 italic">Đã bao gồm chi phí cho 2 con học tập</p>
+               </div>
+               <div className="bg-emerald-600 p-6 rounded-3xl text-white shadow-lg">
+                  <p className="text-[10px] font-black opacity-70 uppercase mb-1">Số dư còn lại</p>
+                  <p className="text-2xl font-black">2.500.000đ</p>
+                  <p className="text-[10px] mt-2 opacity-80 italic">Tiền tiết kiệm ròng mỗi tháng</p>
+               </div>
+               <div className="md:col-span-2 bg-slate-100 p-6 rounded-3xl border border-slate-200 flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <p className="text-slate-500 font-black text-xs uppercase mb-1">Tình trạng tài chính</p>
+                    <p className="text-xl font-black text-slate-800 flex items-center gap-2">
+                      <CheckCircle2 className="text-emerald-500" size={24}/> AN TOÀN & BỀN VỮNG
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-slate-400 text-xs font-bold">Tích lũy năm dự kiến</p>
+                    <p className="text-xl font-black text-indigo-700">~ 30.000.000đ</p>
+                  </div>
+               </div>
+            </div>
+
+            {/* CHIẾN LƯỢC TỐI ƯU HÓA */}
+            <div className="mt-10 bg-indigo-50/50 rounded-3xl p-8 border border-indigo-100">
+               <div className="flex items-center gap-2 font-black text-indigo-900 mb-6 border-b border-indigo-100 pb-2">
+                 <Target size={20}/> QUY TẮC "3 KHÔNG - 3 CÓ" ĐỂ GIỮ VỮNG SỐ DƯ
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                     <p className="text-sm font-black text-indigo-800 uppercase flex items-center gap-2">
+                        <UserX size={16}/> 3 KHÔNG (Cắt giảm lãng phí)
+                     </p>
+                     <ul className="text-sm text-slate-600 font-medium space-y-2">
+                        <li className="flex gap-2"><span>-</span> <b>Không lãng phí điện:</b> Tắt thiết bị khi đi làm ruộng, tiết kiệm thêm ~200k/tháng.</li>
+                        <li className="flex gap-2"><span>-</span> <b>Không mua sắm cảm tính:</b> Chỉ mua đồ dùng khi thực sự cần, không mua theo hứng thú khi vừa có tiền bán vụ.</li>
+                        <li className="flex gap-2"><span>-</span> <b>Không đi chợ bừa bãi:</b> Tận dụng tối đa rau vườn, cá ao nhà trước khi ra chợ.</li>
+                     </ul>
+                  </div>
+                  <div className="space-y-3">
+                     <p className="text-sm font-black text-emerald-800 uppercase flex items-center gap-2">
+                        <UserCheck size={16}/> 3 CÓ (Xây dựng kỷ luật)
+                     </p>
+                     <ul className="text-sm text-slate-600 font-medium space-y-2">
+                        <li className="flex gap-2"><span>-</span> <b>Có quỹ học tập:</b> Gửi riêng 3 triệu vào tài khoản/hũ tiết kiệm ngay khi có thu nhập.</li>
+                        <li className="flex gap-2"><span>-</span> <b>Có quỹ tái sản xuất:</b> Dự trù sẵn 2 triệu cho phân bón/giống để không phải vay nặng lãi khi vào vụ mới.</li>
+                        <li className="flex gap-2"><span>-</span> <b>Có ghi chép:</b> Theo dõi các khoản chi {'>'} 50k để biết tiền "đi đâu".</li>
+                     </ul>
+                  </div>
+               </div>
+            </div>
+          </div>
+        </div>
+
+        <footer className="mt-20 border-t border-slate-200 pt-10 text-center pb-20">
+          <p className="text-slate-400 font-bold uppercase tracking-[0.5em] text-xs">Phát Triển Tài Chính Gia Đình Nhà Nông Bền Vững • 2025</p>
+        </footer>
+      </div>
+    </div>
+  );
+}
